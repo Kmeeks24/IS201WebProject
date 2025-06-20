@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wheel Of Fortune Guessing Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    li {
+      text-align: left;;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(5, 40px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    input[type="text"] {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    #timer {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    #leaderboard {
+      margin-top: 30px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin: 10px;
+      border-radius: 5px;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Wheel of Fortune Game</h1>
+  <h2>Instructions</h2>
+    <ol>
+      <li>Fill in the letters to spell out the phrase. You have 5 minutes to complete the game.</li>
+      <li>Enter one letter in each box. Press "Submit" when you are done.</li>
+    </ol>
+  <h3>Hint</h3>
+    <p>The phrase is a common greeting that an alien might give.</p>
+    
+  <div id="timer">Time Left: 5:00</div>
+
+  <div id="grid">
+    <input maxlength="1" data-pos="0">
+    <input maxlength="1" data-pos="1">
+    <input maxlength="1" data-pos="2">
+    <input maxlength="1" data-pos="3">
+    <input maxlength="1" data-pos="4">
+    <input maxlength="1" data-pos="5">
+    <input maxlength="1" data-pos="6">
+    <input maxlength="1" data-pos="7">
+    <input maxlength="1" data-pos="8">
+    <input maxlength="1" data-pos="9">
+  </div>
+
+  <button class="button" onclick="submitGame()">Submit</button>
+
+  <div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <ol id="scoresList"></ol>
+  </div>
+
+  <script>
+    let timeLeft = 300; // 5 minutes in seconds
+    let timerInterval;
+
+    const correctAnswer = ['H', 'E', 'L', 'L', 'O', 'E', 'A', 'R', 'T', 'H'];
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        document.getElementById("timer").innerText = `Time Left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          submitGame();
+        }
+      }, 1000);
+    }
+
+    function submitGame() {
+      clearInterval(timerInterval);
+      const inputs = document.querySelectorAll('#grid input');
+      let userAnswer = Array.from(inputs).map(input => input.value.toUpperCase());
+      let correct = correctAnswer.every((letter, i) => letter === userAnswer[i]);
+
+      if (correct) {
+        let timeTaken = 300 - timeLeft;
+        let name = prompt("Correct! Enter your name for the leaderboard:");
+        if (name) {
+          saveScore(name, timeTaken);
+          displayLeaderboard();
+        }
+      } else {
+        alert("Some answers are incorrect. Try again!");
+        startTimer();
+      }
+    }
+
+    function saveScore(name, time) {
+      let scores = JSON.parse(localStorage.getItem("leaderboard")) || [];
+      scores.push({ name, time });
+      scores.sort((a, b) => a.time - b.time);
+      localStorage.setItem("leaderboard", JSON.stringify(scores));
+    }
+
+    function displayLeaderboard() {
+      let scores = JSON.parse(localStorage.getItem("leaderboard")) || [];
+      const list = document.getElementById("scoresList");
+      list.innerHTML = "";
+      scores.forEach(entry => {
+        let li = document.createElement("li");
+        li.textContent = `${entry.name} - ${entry.time}s`;
+        list.appendChild(li);
+      });
+    }
+
+    // Start the game
+    displayLeaderboard();
+    startTimer();
+  </script>
+
+</body>
+</html>
